@@ -7,6 +7,15 @@ source /opt/nexpanel/venv/bin/activate
 echo "=== Installing bcrypt 4.2.1 ==="
 pip install "bcrypt>=4.2.0,<4.3.0" -q
 
+echo "=== Building frontend ==="
+if [[ -f /opt/nexpanel/frontend-new/package.json ]] && [[ ! -d /opt/nexpanel/frontend-new/dist ]]; then
+    which node || (curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs)
+    cd /opt/nexpanel/frontend-new
+    npm install
+    npm run build
+    cd /opt/nexpanel/backend
+fi
+
 echo "=== Creating admin user ==="
 python -c "
 import asyncio

@@ -266,6 +266,46 @@ copy_files() {
     log "Project files copied."
 }
 
+# ── Build Frontend ────────────────────────────────────────────────────────
+build_frontend() {
+    if [[ -d "${FRONTEND_DIR}/dist" ]]; then
+        log "Frontend already built. Skipping."
+        return
+    fi
+
+    if [[ ! -f "${FRONTEND_DIR}/package.json" ]]; then
+        warn "No package.json found in frontend-new. Skipping frontend build."
+        return
+    fi
+
+    log "Building frontend..."
+
+    if ! command -v node &>/dev/null; then
+        log "Installing Node.js..."
+        if command -v apt-get &>/dev/null; then
+            apt-get install -y nodejs npm >/dev/null 2>&1 || true
+        elif command -v curl &>/dev/null; then
+            curl -fsSL https://deb.nodesource.com/setup_20.x | bash - >/dev/null 2>&1 || true
+            apt-get install -y nodejs >/dev/null 2>&1 || true
+        fi
+    fi
+
+    if command -v node &>/dev/null && command -v npm &>/dev/null; then
+        cd "${FRONTEND_DIR}"
+        npm install 2>/dev/null || true
+        npm run build 2>/dev/null || true
+        cd "${INSTALL_DIR}"
+        if [[ -d "${FRONTEND_DIR}/dist" ]]; then
+            log "Frontend built successfully."
+        else
+            warn "Frontend build failed. The panel will serve API only."
+        fi
+    else
+        warn "Node.js not available. Frontend will not be built."
+        warn "Install Node.js and run: cd /opt/nexpanel/frontend-new && npm install && npm run build"
+    fi
+}
+
 # ── Set Up Python Virtual Environment ───────────────────────────────────────
 setup_venv() {
     log "Setting up Python virtual environment..."
@@ -708,6 +748,7 @@ main() {
     install_nodejs
     create_directories
     copy_files
+    build_frontend
     setup_venv
     generate_env
     prompt_admin
