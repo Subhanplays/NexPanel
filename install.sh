@@ -610,6 +610,7 @@ create_admin_user() {
     ADMIN_PASSWORD=$(grep -E "^ADMIN_PASSWORD=" "${ENV_FILE}" | cut -d= -f2- || echo "changeme")
 
     if [[ -f "${INSTALL_DIR}/venv/bin/python" ]]; then
+        cd "${BACKEND_DIR}"
         "${INSTALL_DIR}/venv/bin/python" -c "
 import asyncio, sys
 sys.path.insert(0, '${BACKEND_DIR}')
@@ -728,6 +729,18 @@ main() {
     if command -v systemctl &>/dev/null && systemctl is-system-running &>/dev/null 2>&1; then
         systemctl start ${SERVICE_NAME}
         log "NexPanel service started."
+    else
+        if command -v screen &>/dev/null; then
+            mkdir -p "${INSTALL_DIR}/logs"
+            screen -dmS nexpanel bash "${INSTALL_DIR}/run.sh"
+            log "NexPanel started in screen session."
+        elif command -v tmux &>/dev/null; then
+            mkdir -p "${INSTALL_DIR}/logs"
+            tmux new-session -d -s nexpanel "bash ${INSTALL_DIR}/run.sh"
+            log "NexPanel started in tmux session."
+        else
+            log "No screen/tmux found. Start manually: ${INSTALL_DIR}/run.sh"
+        fi
     fi
 }
 
