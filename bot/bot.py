@@ -810,7 +810,7 @@ if not hasattr(bot, "session_tokens"):
     bot.session_tokens: dict[str, str] = {}
 
 
-@bot.tree.command(name="login", description="Authenticate with the VPS panel")
+@bot.tree.command(name="login", description="Authenticate with the NexPanel")
 @app_commands.describe(username="Panel username or email", password="Your password")
 async def slash_login(interaction: discord.Interaction, username: str, password: str):
     try:
@@ -839,7 +839,7 @@ async def prefix_login(ctx: commands.Context, username: Optional[str] = None, pa
         await ctx.send(embed=_error_embed(f"Login failed: {exc.detail}"))
 
 
-@bot.tree.command(name="logout", description="Log out of the VPS panel")
+@bot.tree.command(name="logout", description="Log out of the NexPanel")
 async def slash_logout(interaction: discord.Interaction):
     key = f"_token_{interaction.user.id}"
     bot.session_tokens.pop(key, None)

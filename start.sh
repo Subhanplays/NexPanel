@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# VPS Panel - Start Script
+# NexPanel - Start Script
 # =============================================================================
 set -euo pipefail
 
@@ -9,8 +9,8 @@ log()  { echo -e "${GREEN}[INFO]${NC}  $*"; }
 warn() { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 err()  { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 
-INSTALL_DIR="/opt/vps-panel"
-SERVICE_NAME="vps-panel"
+INSTALL_DIR="/opt/nexpanel"
+SERVICE_NAME="nexpanel"
 
 # ── Root Check ───────────────────────────────────────────────────────────────
 if [[ "${EUID}" -ne 0 ]]; then
@@ -21,32 +21,32 @@ fi
 # ── Start via Systemd ───────────────────────────────────────────────────────
 start_systemd() {
     if systemctl is-active --quiet "${SERVICE_NAME}" 2>/dev/null; then
-        log "VPS Panel is already running."
+        log "NexPanel is already running."
         return
     fi
     systemctl start "${SERVICE_NAME}"
     sleep 3
     if systemctl is-active --quiet "${SERVICE_NAME}"; then
-        log "VPS Panel started successfully."
+        log "NexPanel started successfully."
     else
-        err "Failed to start VPS Panel. Check: journalctl -u ${SERVICE_NAME} -n 50"
+        err "Failed to start NexPanel. Check: journalctl -u ${SERVICE_NAME} -n 50"
         exit 1
     fi
 }
 
 # ── Start via Screen ────────────────────────────────────────────────────────
 start_screen() {
-    if screen -list 2>/dev/null | grep -q "vps-panel"; then
-        log "VPS Panel screen session already running."
+    if screen -list 2>/dev/null | grep -q "nexpanel"; then
+        log "NexPanel screen session already running."
         return
     fi
     if [[ -x "${INSTALL_DIR}/run.sh" ]]; then
-        screen -dmS vps-panel bash "${INSTALL_DIR}/run.sh"
+        screen -dmS nexpanel bash "${INSTALL_DIR}/run.sh"
         sleep 2
-        if screen -list 2>/dev/null | grep -q "vps-panel"; then
-            log "VPS Panel started in screen session."
+        if screen -list 2>/dev/null | grep -q "nexpanel"; then
+            log "NexPanel started in screen session."
         else
-            err "Failed to start VPS Panel in screen."
+            err "Failed to start NexPanel in screen."
             exit 1
         fi
     else
@@ -57,17 +57,17 @@ start_screen() {
 
 # ── Start via tmux ──────────────────────────────────────────────────────────
 start_tmux() {
-    if tmux has-session -t vps-panel 2>/dev/null; then
-        log "VPS Panel tmux session already running."
+    if tmux has-session -t nexpanel 2>/dev/null; then
+        log "NexPanel tmux session already running."
         return
     fi
     if [[ -x "${INSTALL_DIR}/run.sh" ]]; then
-        tmux new-session -d -s vps-panel "bash ${INSTALL_DIR}/run.sh"
+        tmux new-session -d -s nexpanel "bash ${INSTALL_DIR}/run.sh"
         sleep 2
-        if tmux has-session -t vps-panel 2>/dev/null; then
-            log "VPS Panel started in tmux session."
+        if tmux has-session -t nexpanel 2>/dev/null; then
+            log "NexPanel started in tmux session."
         else
-            err "Failed to start VPS Panel in tmux."
+            err "Failed to start NexPanel in tmux."
             exit 1
         fi
     else

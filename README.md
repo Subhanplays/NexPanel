@@ -98,8 +98,8 @@ The installer will:
 ```bash
 # Clone the repository
 cd /opt
-git clone https://github.com/your-repo/vps-panel.git
-cd vps-panel
+git clone https://github.com/your-repo/NexPanel.git
+cd NexPanel
 
 # Install Python dependencies
 python3 -m venv venv
@@ -133,7 +133,7 @@ Key configuration options:
 | `DATABASE_URL` | Database connection string | `sqlite+aiosqlite:///./data/panel.db` |
 | `DOCKER_NETWORK` | Docker network name | `vps-network` |
 | `MAX_VPS_PER_USER` | Max VPS per user | `3` |
-| `ADMIN_EMAIL` | Admin account email | `admin@vps-panel.local` |
+| `ADMIN_EMAIL` | Admin account email | `admin@nexpanel.local` |
 | `ADMIN_USERNAME` | Admin username | `admin` |
 
 See `.env.example` for the full list of configuration options.
@@ -142,19 +142,19 @@ See `.env.example` for the full list of configuration options.
 
 ```bash
 # Start the service
-sudo /opt/vps-panel/start.sh
+sudo /opt/nexpanel/start.sh
 
 # Stop the service
-sudo /opt/vps-panel/stop.sh
+sudo /opt/nexpanel/stop.sh
 
 # Restart the service
-sudo /opt/vps-panel/restart.sh
+sudo /opt/nexpanel/restart.sh
 
 # Update to latest version
-sudo /opt/vps-panel/update.sh
+sudo /opt/nexpanel/update.sh
 
 # Uninstall
-sudo /opt/vps-panel/uninstall.sh
+sudo /opt/nexpanel/uninstall.sh
 ```
 
 ## API Documentation
@@ -219,10 +219,10 @@ See [SECURITY.md](SECURITY.md) for detailed security documentation.
 
 ```bash
 # Check logs
-sudo journalctl -u vps-panel -n 100
+sudo journalctl -u nexpanel -n 100
 
 # Or check the log file
-sudo tail -100 /opt/vps-panel/logs/panel.log
+sudo tail -100 /opt/nexpanel/logs/panel.log
 ```
 
 ### Database issues
@@ -230,8 +230,8 @@ sudo tail -100 /opt/vps-panel/logs/panel.log
 ```bash
 # The database is auto-created on first start
 # To reset, delete the database file:
-sudo rm /opt/vps-panel/data/panel.db
-sudo systemctl restart vps-panel
+sudo rm /opt/nexpanel/data/panel.db
+sudo systemctl restart nexpanel
 ```
 
 ### Docker permission denied

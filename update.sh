@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# VPS Panel - Update Script
+# NexPanel - Update Script
 # Pulls latest code, backs up database, updates dependencies, runs migrations.
 # =============================================================================
 set -euo pipefail
@@ -11,8 +11,8 @@ warn() { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 err()  { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 die()  { err "$@"; exit 1; }
 
-INSTALL_DIR="/opt/vps-panel"
-SERVICE_NAME="vps-panel"
+INSTALL_DIR="/opt/nexpanel"
+SERVICE_NAME="nexpanel"
 BACKUP_DIR="${INSTALL_DIR}/backups"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
@@ -81,7 +81,7 @@ print('Database migrations completed.')
 
 # ── Restart Service ─────────────────────────────────────────────────────────
 restart_service() {
-    log "Restarting VPS Panel service..."
+    log "Restarting NexPanel service..."
 
     if command -v systemctl &>/dev/null && systemctl is-system-running &>/dev/null 2>&1; then
         systemctl restart "${SERVICE_NAME}"
@@ -94,12 +94,12 @@ restart_service() {
         fi
     else
         # Screen/tmux fallback
-        if screen -list 2>/dev/null | grep -q "vps-panel"; then
-            screen -S vps-panel -X quit 2>/dev/null || true
+        if screen -list 2>/dev/null | grep -q "nexpanel"; then
+            screen -S nexpanel -X quit 2>/dev/null || true
             sleep 2
         fi
         if command -v screen &>/dev/null; then
-            screen -dmS vps-panel bash "${INSTALL_DIR}/run.sh"
+            screen -dmS nexpanel bash "${INSTALL_DIR}/run.sh"
             log "Service restarted in screen session."
         else
             warn "Neither systemd nor screen found. Please restart manually."
@@ -110,7 +110,7 @@ restart_service() {
 # ── Main ────────────────────────────────────────────────────────────────────
 main() {
     echo ""
-    echo -e "${GREEN}VPS Panel - Update Script${NC}"
+    echo -e "${GREEN}NexPanel - Update Script${NC}"
     echo "========================="
     echo ""
 

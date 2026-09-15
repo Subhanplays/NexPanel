@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     DOCKER_SUBNET: str = "172.20.0.0/16"
     DOCKER_IMAGE_BUILD_TIMEOUT: int = 600
     DOCKER_CONTAINER_START_TIMEOUT: int = 120
-    DOCKER_DATA_DIR: str = "/var/lib/vps-panel/data"
+    DOCKER_DATA_DIR: str = "/var/lib/nexpanel/data"
 
     IP_POOL_SUBNET: str = "10.0.0.0/24"
     IP_POOL_GATEWAY: str = "10.0.0.1"

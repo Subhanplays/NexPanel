@@ -179,7 +179,7 @@ async def provision_vps(
     username = vps.username
     root_password = generate_password()
     user_password = password
-    image_tag = f"vps-panel/{vps_id}:latest"
+    image_tag = f"nexpanel/{vps_id}:latest"
 
     try:
         _build_image(
@@ -216,7 +216,7 @@ async def provision_vps(
             restart_policy={"Name": "always"},
             log_config=log_config,
             hostname=f"vps-{vps_id}",
-            labels={"vps-panel": "true", "vps-id": vps_id, "user-id": str(vps.user_id)},
+            labels={"nexpanel": "true", "vps-id": vps_id, "user-id": str(vps.user_id)},
         )
         vps.container_id = container.id
         logger.info(f"Created container {container.short_id} for VPS {vps_id}")
@@ -434,7 +434,7 @@ async def reinstall_vps(db: AsyncSession, vps: VPS, password: str) -> None:
     username = vps.username
     root_password = generate_password()
     user_password = password
-    image_tag = f"vps-panel/{vps.vps_id}:latest"
+    image_tag = f"nexpanel/{vps.vps_id}:latest"
 
     try:
         _build_image(
@@ -470,7 +470,7 @@ async def reinstall_vps(db: AsyncSession, vps: VPS, password: str) -> None:
             restart_policy={"Name": "always"},
             log_config=log_config,
             hostname=f"vps-{vps.vps_id}",
-            labels={"vps-panel": "true", "vps-id": vps.vps_id, "user-id": str(vps.user_id)},
+            labels={"nexpanel": "true", "vps-id": vps.vps_id, "user-id": str(vps.user_id)},
         )
         vps.container_id = container.id
     except Exception as e:

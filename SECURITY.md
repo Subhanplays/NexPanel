@@ -218,7 +218,7 @@ During installation, the following secrets are auto-generated:
 If you discover a security vulnerability:
 
 1. **Do not** open a public GitHub issue
-2. Email security@vps-panel.local (or your designated contact)
+2. Email security@nexpanel.local (or your designated contact)
 3. Include:
    - Description of the vulnerability
    - Steps to reproduce

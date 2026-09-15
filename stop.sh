@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# VPS Panel - Stop Script
+# NexPanel - Stop Script
 # =============================================================================
 set -euo pipefail
 
@@ -9,8 +9,8 @@ log()  { echo -e "${GREEN}[INFO]${NC}  $*"; }
 warn() { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 err()  { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 
-INSTALL_DIR="/opt/vps-panel"
-SERVICE_NAME="vps-panel"
+INSTALL_DIR="/opt/nexpanel"
+SERVICE_NAME="nexpanel"
 
 # ── Root Check ───────────────────────────────────────────────────────────────
 if [[ "${EUID}" -ne 0 ]]; then
@@ -22,29 +22,29 @@ fi
 stop_systemd() {
     if systemctl is-active --quiet "${SERVICE_NAME}" 2>/dev/null; then
         systemctl stop "${SERVICE_NAME}"
-        log "VPS Panel stopped via systemd."
+        log "NexPanel stopped via systemd."
     else
-        log "VPS Panel is not running (systemd)."
+        log "NexPanel is not running (systemd)."
     fi
 }
 
 # ── Stop Screen ─────────────────────────────────────────────────────────────
 stop_screen() {
-    if screen -list 2>/dev/null | grep -q "vps-panel"; then
-        screen -S vps-panel -X quit 2>/dev/null
-        log "VPS Panel screen session terminated."
+    if screen -list 2>/dev/null | grep -q "nexpanel"; then
+        screen -S nexpanel -X quit 2>/dev/null
+        log "NexPanel screen session terminated."
     else
-        log "VPS Panel is not running (screen)."
+        log "NexPanel is not running (screen)."
     fi
 }
 
 # ── Stop tmux ───────────────────────────────────────────────────────────────
 stop_tmux() {
-    if tmux has-session -t vps-panel 2>/dev/null; then
-        tmux kill-session -t vps-panel 2>/dev/null
-        log "VPS Panel tmux session terminated."
+    if tmux has-session -t nexpanel 2>/dev/null; then
+        tmux kill-session -t nexpanel 2>/dev/null
+        log "NexPanel tmux session terminated."
     else
-        log "VPS Panel is not running (tmux)."
+        log "NexPanel is not running (tmux)."
     fi
 }
 
@@ -72,4 +72,4 @@ stop_screen
 stop_tmux
 kill_remaining
 
-log "VPS Panel stopped."
+log "NexPanel stopped."

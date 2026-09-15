@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# VPS Panel - Uninstall Script
+# NexPanel - Uninstall Script
 # Removes the application, data, and service configuration.
 # =============================================================================
 set -euo pipefail
@@ -10,9 +10,9 @@ log()  { echo -e "${GREEN}[INFO]${NC}  $*"; }
 warn() { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 err()  { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 
-INSTALL_DIR="/opt/vps-panel"
-SERVICE_NAME="vps-panel"
-DATA_DIR="/var/lib/vps-panel"
+INSTALL_DIR="/opt/nexpanel"
+SERVICE_NAME="nexpanel"
+DATA_DIR="/var/lib/nexpanel"
 
 # ── Root Check ───────────────────────────────────────────────────────────────
 if [[ "${EUID}" -ne 0 ]]; then
@@ -23,7 +23,7 @@ fi
 # ── Confirmation ────────────────────────────────────────────────────────────
 echo -e "${RED}"
 echo "  ╔══════════════════════════════════════════════════════╗"
-echo "  ║       VPS Panel - Uninstall                        ║"
+echo "  ║       NexPanel - Uninstall                        ║"
 echo "  ╠══════════════════════════════════════════════════════╣"
 echo "  ║  This will permanently remove:                      ║"
 echo "  ║    - Application files at ${INSTALL_DIR}             ║"
@@ -34,7 +34,7 @@ echo "  ║    - All VPS containers created by the panel        ║"
 echo "  ╚══════════════════════════════════════════════════════╝"
 echo -e "${NC}"
 
-read -rp "Are you sure you want to uninstall VPS Panel? (type 'yes' to confirm): " CONFIRM
+read -rp "Are you sure you want to uninstall NexPanel? (type 'yes' to confirm): " CONFIRM
 if [[ "${CONFIRM}" != "yes" ]]; then
     echo "Uninstall cancelled."
     exit 0
@@ -58,11 +58,11 @@ if command -v systemctl &>/dev/null && systemctl is-system-running &>/dev/null 2
 fi
 
 # Screen/tmux
-if screen -list 2>/dev/null | grep -q "vps-panel"; then
-    screen -S vps-panel -X quit 2>/dev/null || true
+if screen -list 2>/dev/null | grep -q "nexpanel"; then
+    screen -S nexpanel -X quit 2>/dev/null || true
 fi
-if tmux has-session -t vps-panel 2>/dev/null; then
-    tmux kill-session -t vps-panel 2>/dev/null || true
+if tmux has-session -t nexpanel 2>/dev/null; then
+    tmux kill-session -t nexpanel 2>/dev/null || true
 fi
 
 # Kill remaining processes
@@ -74,7 +74,7 @@ log "Services stopped."
 if command -v docker &>/dev/null; then
     log "Removing VPS containers created by the panel..."
     local CONTAINERS
-    CONTAINERS=$(docker ps -a --filter "label=com.vps-panel.managed=true" -q 2>/dev/null || true)
+    CONTAINERS=$(docker ps -a --filter "label=com.nexpanel.managed=true" -q 2>/dev/null || true)
     if [[ -n "${CONTAINERS}" ]]; then
         echo "${CONTAINERS}" | xargs docker rm -f 2>/dev/null || true
         log "VPS containers removed."
@@ -102,12 +102,12 @@ fi
 
 # ── Remove Log Files ───────────────────────────────────────────────────────
 log "Cleaning up log files..."
-rm -f /var/log/vps-panel*.log 2>/dev/null || true
+rm -f /var/log/nexpanel*.log 2>/dev/null || true
 
 # ── Summary ─────────────────────────────────────────────────────────────────
 echo ""
 echo -e "${CYAN}============================================================${NC}"
-echo -e "${GREEN}VPS Panel has been uninstalled successfully.${NC}"
+echo -e "${GREEN}NexPanel has been uninstalled successfully.${NC}"
 echo -e "${CYAN}============================================================${NC}"
 echo ""
 echo -e "  ${YELLOW}Note:${NC}"
