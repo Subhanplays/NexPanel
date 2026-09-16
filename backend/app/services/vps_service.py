@@ -52,7 +52,9 @@ DOCKERFILE_TEMPLATE = """FROM {base_image}
 ENV DEBIAN_FRONTEND=noninteractive
 ENV container=docker
 
-RUN apt-get update && apt-get install -y --no-install-recommends \\
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \\
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf && \\
+    apt-get update && apt-get install -y --no-install-recommends \\
     {packages} \\
     && apt-get clean \\
     && rm -rf /var/lib/apt/lists/*
@@ -132,6 +134,7 @@ def _build_image(
             rm=True,
             forcerm=True,
             timeout=settings.DOCKER_IMAGE_BUILD_TIMEOUT,
+            network_mode="host",
         )
         for chunk in build_logs:
             if "stream" in chunk:
