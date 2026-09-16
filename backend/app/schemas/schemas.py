@@ -126,6 +126,7 @@ class VPSResponse(BaseModel):
     tailscale_ip: Optional[str] = None
     tmate_session: Optional[str] = None
     sshx_session: Optional[str] = None
+    ssh_port: int = 22
     restart_count: int
     last_restart: Optional[datetime] = None
     created_at: datetime

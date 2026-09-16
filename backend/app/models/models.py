@@ -73,6 +73,7 @@ class VPS(Base):
     tailscale_ip = Column(String(45), nullable=True)
     tmate_session = Column(Text, nullable=True)
     sshx_session = Column(Text, nullable=True)
+    ssh_port = Column(Integer, default=22, nullable=False)
     restart_count = Column(Integer, default=0, nullable=False)
     last_restart = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=utcnow, nullable=False)

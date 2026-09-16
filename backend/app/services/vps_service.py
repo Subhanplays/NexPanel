@@ -1,9 +1,11 @@
 import asyncio
 import logging
+import random
 import secrets
 import shutil
 import string
 import tempfile
+import time
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
@@ -52,30 +54,28 @@ DOCKERFILE_TEMPLATE = """FROM {base_image}
 ENV DEBIAN_FRONTEND=noninteractive
 ENV container=docker
 
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \\
-    echo "nameserver 8.8.4.4" >> /etc/resolv.conf && \\
-    apt-get update && apt-get install -y --no-install-recommends \\
-    {packages} \\
-    && apt-get clean \\
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \\
+    systemd systemd-sysv dbus sudo \\
+    curl gnupg2 apt-transport-https ca-certificates \\
+    software-properties-common \\
+    docker.io openssh-server tmate \\
+    {packages} && \\
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /run/sshd
+RUN mkdir -p /var/run/sshd && \\
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \\
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config && \\
+    echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \\
+    echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
+
+RUN systemctl enable ssh && \\
+    systemctl enable docker
 
 RUN echo "root:{root_password}" | chpasswd && \\
     echo "{username}:{user_password}" | chpasswd
 
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config 2>/dev/null || true; \\
-    sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config 2>/dev/null || true; \\
-    echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \\
-    echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config && \\
-    echo "ChallengeResponseAuthentication no" >> /etc/ssh/sshd_config && \\
-    echo "UsePAM yes" >> /etc/ssh/sshd_config
-
-RUN echo '#!/bin/bash\\n/usr/sbin/sshd -D' > /entrypoint.sh && chmod +x /entrypoint.sh
-
-EXPOSE 22
-
-CMD ["/entrypoint.sh"]
+STOPSIGNAL SIGRTMIN+3
+CMD ["/sbin/init"]
 """
 
 
@@ -201,24 +201,27 @@ async def provision_vps(
 
     mem_limit = f"{vps.memory_gb}g"
     cpu_quota = int(vps.cpu_cores * 100000)
-    data_dir = f"{settings.DOCKER_DATA_DIR}/{vps_id}/data"
     log_config = LogConfig(type=LogConfig.types.JSON, config={"max-size": "10m", "max-file": "3"})
+
+    ssh_port = random.randint(20000, 30000)
 
     try:
         container = client.containers.run(
             image=image_tag,
             name=f"vps-{vps_id}",
             detach=True,
-            privileged=False,
-            cap_add=["NET_ADMIN", "SYS_PTRACE"],
+            privileged=True,
+            cap_add=["SYS_ADMIN", "NET_ADMIN"],
+            security_opt=["seccomp=unconfined"],
+            hostname=f"vps-{vps_id}",
             mem_limit=mem_limit,
             cpu_period=100000,
             cpu_quota=cpu_quota,
             network=DOCKER_NETWORK,
-            volumes={data_dir: {"bind": "/data", "mode": "rw"}},
+            volumes={f"nexpanel-{vps_id}": {"bind": "/data", "mode": "rw"}},
             restart_policy={"Name": "always"},
             log_config=log_config,
-            hostname=f"vps-{vps_id}",
+            ports={"22/tcp": ssh_port},
             labels={"nexpanel": "true", "vps-id": vps_id, "user-id": str(vps.user_id)},
         )
         vps.container_id = container.id
@@ -229,23 +232,26 @@ async def provision_vps(
         logger.error(f"Failed to create container for VPS {vps_id}: {e}")
         return
 
-    await _wait_for_container_ready(container.id)
+    time.sleep(5)
 
     setup_cmds = [
-        "systemctl enable ssh || true",
-        "systemctl start ssh || true",
-        "mkdir -p /run/sshd /root/.ssh",
-        "chmod 700 /root/.ssh",
-        f"mkdir -p /home/{username}/.ssh && chmod 700 /home/{username}/.ssh && chown -R {username}:{username} /home/{username}/.ssh",
+        f"echo 'root:{root_password}' | chpasswd",
+        f"echo 'echo Welcome to NexPanel VPS {vps_id}' > /etc/motd",
+        f"echo '{vps_id}' > /etc/hostname && hostname {vps_id}",
+        "ssh-keygen -A || true",
+        "systemctl restart ssh || true",
+        "mkdir -p /root/.ssh && chmod 700 /root/.ssh",
         "echo 'nameserver 8.8.8.8' > /etc/resolv.conf",
         "echo 'nameserver 8.8.4.4' >> /etc/resolv.conf",
-        "ssh-keygen -A || true",
+        "apt-get update && apt-get upgrade -y || true",
+        "apt-get -y autoremove || true",
+        "apt-get clean || true",
     ]
 
     for cmd in setup_cmds:
         try:
             client.containers.get(vps.container_id).exec_run(
-                ["bash", "-c", cmd], timeout=30
+                ["bash", "-c", cmd], timeout=60
             )
         except Exception as e:
             logger.warning(f"Setup command failed: {cmd}: {e}")
@@ -281,6 +287,7 @@ async def provision_vps(
 
     vps.status = "running"
     vps.root_password_hash = root_password
+    vps.ssh_port = ssh_port
     await db.commit()
     logger.info(f"VPS {vps_id} provisioned successfully")
 
