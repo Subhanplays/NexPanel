@@ -79,7 +79,7 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    payload = decode_token(credentials.credentials)
+    payload = decode_token(token)
     token_type = payload.get("type")
     if token_type != "access":
         raise HTTPException(

@@ -130,7 +130,7 @@ export default function FileManager() {
       const token = localStorage.getItem('vps_token');
       const res = await fetch(`/api/v1/vps/${id}/files/upload?path=${encodeURIComponent(currentPath)}`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { 'X-Auth-Token': token },
         body: formData,
       });
       if (!res.ok) {
