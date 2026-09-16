@@ -59,23 +59,23 @@ RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \\
     && apt-get clean \\
     && rm -rf /var/lib/apt/lists/*
 
-RUN systemctl set-default multi-user.target
-
 RUN mkdir -p /run/sshd
 
 RUN echo "root:{root_password}" | chpasswd && \\
     echo "{username}:{user_password}" | chpasswd
 
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \\
-    sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \\
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config 2>/dev/null || true; \\
+    sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config 2>/dev/null || true; \\
     echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \\
     echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config && \\
     echo "ChallengeResponseAuthentication no" >> /etc/ssh/sshd_config && \\
     echo "UsePAM yes" >> /etc/ssh/sshd_config
 
-RUN systemctl enable ssh
+RUN echo '#!/bin/bash\\n/usr/sbin/sshd -D' > /entrypoint.sh && chmod +x /entrypoint.sh
 
-STOPSIGNAL SIGRTMIN+3
+EXPOSE 22
+
+CMD ["/entrypoint.sh"]
 """
 
 
@@ -209,8 +209,8 @@ async def provision_vps(
             image=image_tag,
             name=f"vps-{vps_id}",
             detach=True,
-            privileged=True,
-            cap_add=["ALL"],
+            privileged=False,
+            cap_add=["NET_ADMIN", "SYS_PTRACE"],
             mem_limit=mem_limit,
             cpu_period=100000,
             cpu_quota=cpu_quota,
